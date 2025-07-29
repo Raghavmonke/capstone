@@ -1,9 +1,15 @@
 pipeline {
     agent any
 
+    // THIS BLOCK WAS MISSING
+    tools {
+        maven 'Default'
+    }
+
     stages {
         stage('Build App & Docker Image') {
             steps {
+                // This command will now find 'mvn'
                 sh 'mvn clean package'
                 sh 'docker build -t my-web-app:latest .'
             }
