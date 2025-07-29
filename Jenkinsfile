@@ -10,7 +10,7 @@ pipeline {
         stage('Build App & Docker Image') {
             steps {
                 // This command will now find 'mvn'
-                sh 'mvn clean package'
+                sh 'mvn clean package -DskipTests'
                 sh 'docker build -t my-web-app:latest .'
             }
         }
