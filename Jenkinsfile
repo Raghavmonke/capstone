@@ -1,48 +1,20 @@
 pipeline {
     agent any
 
-    tools {
-        // This tells Jenkins to use the Maven tool we will configure in the UI
-        maven 'Default'
-    }
-
     stages {
-        stage('Build') {
+        stage('Build App & Docker Image') {
             steps {
-                // This command compiles your Java code into a .jar file
                 sh 'mvn clean package'
+                sh 'docker build -t my-web-app:latest .'
             }
         }
-
-        stage('Deploy to EC2 Host') {
+        stage('Deploy Docker Container') {
             steps {
-                // This block uses the SSH plugin to deploy the app
-                sshPublisher(publishers: [
-                    sshPublisherDesc(
-                        // This must match the server name you configure in Jenkins
-                        configName: 'ec2-host',
-                        transfers: [
-                            sshTransfer(
-                                sourceFiles: 'target/*.jar',
-                                removePrefix: 'target',
-                                remoteDirectory: 'app'
-                            )
-                        ],
-                        // This is the script that will run on your server
-                        execCommand: '''
-                            # Find and stop the old version of the app, if it exists
-                            PID=$(pgrep -f 'app.jar' || true)
-                            if [ -n "$PID" ]; then
-                              echo "Stopping old process with PID: $PID"
-                              kill -9 $PID
-                            fi
-
-                            # Start the new version of the app
-                            echo "Starting new application on port 8081..."
-                            nohup java -jar ~/app/*.jar > app.log 2>&1 &
-                        '''
-                    )
-                ])
+                sh '''
+                    docker stop my-app || true
+                    docker rm my-app || true
+                    docker run -d --name my-app -p 8081:8081 my-web-app:latest
+                '''
             }
         }
     }
