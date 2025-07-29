@@ -4,7 +4,7 @@ pipeline {
     // THIS BLOCK WAS MISSING
     tools {
         maven 'Default'
-        docker 'Default-Docker'
+        dockerTool 'Default-Docker'
     }
 
     stages {
